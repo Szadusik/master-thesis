@@ -1,0 +1,84 @@
+\documentclass[../main.tex]{subfiles}
+\begin{document}
+
+\chapter*{List of Symbols}
+\addcontentsline{toc}{chapter}{List of Symbols}
+
+\renewcommand{\arraystretch}{1.33}
+
+\section*{General}
+\hspace*{-0.275cm}
+\begin{tabular}{p{2.2cm}l}
+    $\mathbb{R}$ & real numbers \\
+    $\mathbb{C}$ & complex numbers \\
+    $\mathbb{Z}$ & set of integers \\
+    $\mathbb{Z}_n$ & group of integers modulo $n$, i.e. $\left\{0, 1, \ldots, n\right\}$ \\
+    $i$ & imaginary unit, $i^2 = -1$ \\
+    $z^*$ & complex conjugate of $z$ \\
+    $\left|z\right|$ & absolute value of $z$ \\
+    $\Delta x$ & difference of two values \\
+    $x \approx y$ & $x$ is approximately equal to $y$ \\
+    $\exp(x), e^x$ & exponential function \\
+    $f : A \to B$ & function $f$ mapping elements from $A$ to $B$ \\
+    $\displaystyle\argmax_{x \in X} f(x)$ & arguments of the maxima \\
+\end{tabular}
+
+\section*{Linear algebra}
+\hspace*{-0.275cm}
+\begin{tabular}{p{2.2cm}l}
+    $\mathbf{v}$ & row vector \\
+    $\mathbf{v}^\top$ & column vector \\
+    $a_{ij}$ & element of matrix in row $i$ and column $j$ \\
+    $A_{ij}$ & element of matrix $A$ in row $i$ and column $j$ \\
+    $A_{m \times n} = \left[a_{ij}\right]$ & matrix of shape $m \times n$ composed of elements $a_{ij}$ \\
+    $\mathbb{C}_{m \times n}$ & set of matrices of complex numbers of shape $m \times n$ \\
+    $A + B$ & sum of two matrices \\
+    $AB$ & product of two matrices \\
+    $A^*$ & complex conjugate of matrix \\
+    $A^\top$ & matrix transposition of matrix \\
+    $A^\dag$ & Hermitian conjugate of matrix \\
+    $\exp(A), e^A$ & matrix exponential \\
+\end{tabular}
+
+\section*{Set theory}
+\hspace*{-0.275cm}
+\begin{tabular}{p{2.2cm}l}
+    $\forall$ & universal quantifier \\
+    $\exists$ & existential quantifier \\
+    $x \in X$ & $x$ is an element of set $X$, $x$ belongs to set $X$ \\
+    $\bigcup_{i=1}^n X_i$ & set sum of sets $X_1, X_2, \ldots, X_n$ \\
+    $A \setminus B$ & set difference \\
+    $A \times B$ & Cartesian product of sets $A$ and $B$ \\
+    $A^n$ & $n$-th Cartesian product of set $A$ \\
+    $\bigtimes_{i=1}^n A_i$ & Cartesian product of sets $A_i$ \\
+    $\left\{a_i\right\}_{i=1}^n$ & sequence of $\left(a_1, a_2, \ldots, a_n\right)$ \\
+    $\left\{1, 2, \ldots, n\right\}$ & set of consecutive integers starting from 1 to $n$ \\
+\end{tabular}
+
+\section*{Quantum theory}
+\hspace*{-0.275cm}
+\begin{tabular}{p{2.2cm}l}
+    $\ket{\psi}$ & ket, column vector \\
+    $\bra{\psi}$ & bra, row vector \\
+    $\braket{\phi|\psi}$ & bra-ket, inner product, scalar product or dot product \\
+    $\ket{\phi} \bra{\psi}$ & ket-bra, outer product \\
+    $A \tens B$ & tensor (Kronecker) product of two matrices \\
+    $\bigotimes_{i=1}^n A_i$ & tensor product of matrices $A_i$ \\
+    $\ket{\psi}^{\tens n}$ & tensor product of $\ket{\psi}$ with itself $n$ times \\
+    $\sum_{i=1}^n \ket{\psi_i}$ & superposition of quantum states $\ket{\psi_i}$ \\
+    $\sigma_x, \sigma_y, \sigma_z$ & Pauli matrices $X, Y, Z$ \\
+    $\rho$ & density matrix \\
+\end{tabular}
+
+\section*{Game theory}
+\hspace*{-0.275cm}
+\begin{tabular}{p{2.2cm}l}
+    $\payoff_\text{X}$ & payoff function of player X \\
+    $\text{br}_\text{X}$ & best response function of player X \\
+    $\theta_\text{X}$ & strategy parameter of player X \\
+    $A \to B$ & strategy $B$ is a best response for $A$ \\
+    $\mathbf{u} \equiv \mathbf{v}$ & equivalence of two vectors of strategy parameters \\
+    $s_{-i}$ & sequence $s$ without $i$-th element, i.e. $\left\{s_j\right\}_{i=1, i \neq j}^n$ \\
+\end{tabular}
+
+\end{document}
