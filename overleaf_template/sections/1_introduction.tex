@@ -1,0 +1,94 @@
+\documentclass[../main.tex]{subfiles}
+\begin{document}
+
+\setcounter{chapter}{0}
+\chapter{Introduction}
+\label{chap:1}
+
+The subject of this thesis is software-aided analysis and search of Nash equilibria in quantum games. However, this task is only the tip of the iceberg, as it requires the knowledge of best reply correspondence, which depends on the expected payoff function, which in turn depends on the distribution of game outcomes due to the probabilistic nature of quantum computing. In the first chapter, the motivation for this thesis as well as research objectives will be discussed.
+
+\section{Motivation}
+
+Quantum game theory is a relatively new field of study that combines quantum mechanics and classical game theory. Generalization of classical games to the quantum domain significantly expands the space of possible game states and players' strategies, revealing properties not found in the classical counterparts, and therefore becoming an intriguing subject of research.
+
+In recent years there has been an increasing number of publications that introduce various ideas for quantum extensions of classical games to the quantum domain such as quantum poker \cite{fuchs2020quantum}, quantum tic-tac-toe \cite{goff2006quantum}, or quantum blackjack \cite{mura2021quantization}. A more general approach towards so-called \emph{quantization} is the EWL scheme \cite{eisert1999quantum} which is applicable to any two-player binary choice symmetric game, resulting in quantum games such as Quantum Prisoner's Dilemma \cite{eisert1999quantum,chen2006well,Szopa_2014,szopa2021efficiency} or Quantum Absent-Minded Driver \cite{frackiewicz2022quantum}.
+
+Theoretical analysis of quantum games relies on complex matrix computations with trigonometric expressions of multiple variables, which can be particularly prone to human error when performed manually. Moreover, since quantum operators acting on a $n$-qubit system are represented as unitary matrices of complex numbers of shape $2^n \times 2^n$, the problem scales exponentially with increasing number of players, which makes the formulas almost impossible to derive manually for three or more players.
+
+The general motivation of this thesis is to explore possible ways to facilitate the analysis of quantum games in the EWL protocol on classical computers, propose and implement symbolic and numerical methods of finding Nash equilibria, then evaluate their performance on several sample quantum games, and finally compare the formulas against the results from publications.
+
+% Classical game theory has applications in many fields of science, including economics, biology, and sociology.
+% TODO: celem pracy jest przygotowanie narzędzi do automatycznego przeprowadzania obliczeń w grach kwantowych oraz design and implementation algorytmów do automatycznej analizy niektórych własności gier, np. najlepszych odpowiedzi lub równowagi Nasha. W pracy planuje się wykorzystanie biblioteki powstałej w ramach pracowni problemowej. preferowanym wynikiem pracy jest Being able to accurately analyze quantum games in a symbolic manner, we are able to better understand the nature of various properties
+% narzędzie do automatycznej analizy
+% analiza ręczna przez obserwacje i dobieranie współczynników (tożsamości trygonometryczne)
+% często ograniczona jedynie do przypadków brzegowych (0, pi/2, pi etc.)
+% uzasadnić dlaczego robimy symbolicznie (bo PF zauważa sin/cos etc.)
+
+\section{Research questions}
+
+The following research questions provide a starting point for the research conducted in this thesis:
+\begin{itemize}
+\setlength\itemsep{0.05em}
+    \item Which properties of quantum games would be interesting or useful to analyze automatically?
+    \item Can existing software for scientific computing reproduce various formulas related to quantum games as they are published?
+    \item If yes, can these tools be utilized for analysis of more general cases of quantum games, for instance with more players?
+    \item Is there a generic method for finding best reply correspondence or Nash equilibria in pure strategies for arbitrary quantum games in the EWL protocol?
+    \item Are the results of running quantum games on a real quantum device consistent with theoretical expectations?
+\end{itemize}
+
+\section{Research hypothesis}
+
+In this thesis we will try to demonstrate that existing software for scientific computing may be successfully utilized for the purpose of theoretical analysis of various properties of quantum games in the EWL protocol, including finding best responses for arbitrary strategies of the opponent, finding Nash equilibria in pure strategies, or proving the lack of existence of such strategy profiles.
+
+\section{Research objectives}
+
+The objective of this thesis is to conduct research in the field of software-aided analysis of quantum games, in particular:
+\begin{itemize}
+\setlength\itemsep{0.05em}
+    \item prepare software tools for calculating expected payoffs of individual players in arbitrary quantum game in the EWL protocol
+    \item verify the correctness of obtained formulas related to quantum games by comparing them with the theoretical results from existing publications
+    \item execute sample quantum games in the EWL protocol on IBM Q device using \texttt{Operators} library instead of manually decomposing quantum entanglement operators $J$ and $J^\dag$ into simpler quantum gates
+    \item experimentally verify theoretical expectations of quantum game outcomes with the results from a real quantum device
+    \item propose, evaluate and compare symbolic and numerical methods for finding best response in quantum games in the EWL protocol
+    \item check the applicability of fixed-point definition of Nash equilibrium to find such type of equilibria in pure states
+\end{itemize}
+
+\clearpage
+\section{Related works}
+
+In \cite{eisert1999quantum}, Eisert, Wilkens and Lewenstein propose a quantization scheme of two-player binary choice symmetric games which can also involve quantum entanglement (named the EWL protocol after the initials of the originators' names) and demonstrate its use on the example of Prisoner's Dilemma. It is shown that for maximally entangled initial state, the quantum variant of the game has more favourable Nash equilibrium than its classical counterpart. Moreover, there exists a particular quantum strategy called \emph{miracle move} which always gives at least reward if played against any classical strategy which gives the quantum player an advantage over the classical player.
+
+In \cite{galas2019quantum}, a quantum version of Prisoner's Dilemma is executed on a real IBM Q quantum device using Qiskit framework. The work focuses mainly on the construction of entanglement operator $J$ known from EWL protocol which was non-trivial at the time due to a limited set of available gates, therefore manual decomposition of $J$ and $J^\dag$ operators into basic quantum gates supported by a specific IBM Q backend was necessary. The paper also yields valuable results on quantum noise present due to decoherence phenomenon occurring in quantum computers, as well as describes, implements and compares two error mitigation techniques.
+
+In \cite{chen2006well}, a full $\text{SU}(2)$ parametrization with 3 degrees of freedom is used instead of the original EWL parametrization from \cite{eisert1999quantum}. The analysis is continued in \cite{Szopa_2014}, confirming that the quantum version of the game is more profitable for both players, as well as showing that in such variant of Quantum Prisoner's Dilemma there always exists a counter-strategy that gives the highest possible payoff. In the following part of the work, mixed strategies that consist of strategies from best response cycles are introduced, leading to the existence of mixed Nash equilibrium located in the saddle point of expected payoff function. Also, some economical examples of utilizing quantum game Nash equilibria are proposed.
+
+In \cite{szopa2021efficiency}, other types of equilibria are introduced, both for pure and mixed states. It is also shown that the Nash equilibria of these games in quantum mixed Pauli strategies are closer to Pareto optimal results than their classical counterparts. The paper also provides examples of equlibria for a few popular $2 \times 2$ quantum games.
+
+In \cite{shaik2014best}, instead of using original angle-based parametrizations and trigonometric functions, the authors introduce algebra of quaternions, which cleverly facilitates calculation of probabilities of possible game outcomes. Based on the knowledge of best reply correspondence in analytic form for the game of chicken (meaning \emph{coward}), various types of Nash equilibria both in pure and mixed states are found and analyzed. However, the paper contains no instructions on how to obtain the best response function for a generic $2 \times 2$ quantum game.
+
+Apart from publications, there also exist various software tools related to game theory such as Nashpy \cite{nashpyproject} or Gambit \cite{mckelvey2006gambit}, implementing a wide variety of  efficient algorithms for numerical analysis of classical games in terms of the existence of Nash equilibria, Pareto efficiency and other various properties, however with no support for quantum games.
+
+% In \cite{lemke1964equilibrium}, the authors propose a constructive proof of the existence of equilibrium points for classical bimatrix (two-person, non-zero-sum) games. In terms of quantum games, the Lemke-Howson algorithm can be used for finding pure states Nash equilibria.
+
+% In \cite{landsburg2011nash}, quantum games based on EWL protocol are generalized from pure strategies to mixed quantum strategies on 3-sphere $S^3$. where it is hard to compute the Nash equilibria.
+
+% In \cite{bostanci2021quantum}, it is proven that the computational problem of finding an approximate Nash equilibrium is included in the complexity class $\text{PPAD}$. Also, it proposes an extension of prior methods in computational game theory to strategy spaces that are characterized by semidefinite programs.
+
+\section{Structure of the work}
+
+The thesis consists of nine chapters and an appendix.
+
+% \Cref{chap:1}
+\Cref{chap:2} introduces basic terms and definitions related to quantum computing and quantum gate-based devices.
+\Cref{chap:3} provides the background in the field of classical game theory.
+\Cref{chap:4} presents the overview of quantum games, introduces the Eisert-Wilkens-Lewenstein (EWL) protocol and defines several popular parametrizations.
+\Cref{chap:5} introduces a number of variants of Quantum Prisoner's Dilemma with various parametrizations.
+\Cref{chap:6} presents \texttt{ewl} library, a Python tool for symbolic analysis of quantum games in EWL protocol with IBM Q intergration.
+\Cref{chap:7} describes proposed algorithms for finding best responses and Nash equilibria in pure states.
+\Cref{chap:8} presents the results of the experiments with running quantum games on quantum simulators and real quantum devices as well as symbolic and numerical approaches towards software-aided analysis of quantum games.
+\Cref{chap:9} discusses achieved goals, conclusions and future works. 
+
+\Cref{chap:A} presents various attempts to find best response function symbolically using Mathematica with source code listings.
+\Cref{chap:B} contains the abstract submitted for PPAM 2022 conference.
+
+\end{document}

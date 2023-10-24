@@ -1,0 +1,110 @@
+\documentclass[language=english,type=master]{aghmodern}
+
+%\usepackage{lua-visual-debug}
+\usepackage{lipsum}
+
+\titleEN{Nash equilibria searching and analysis in quantum games}
+\titlePL{Wyszukiwanie i analiza równowag Nasha w grach kwantowych}
+\author{Tomasz Zawadzki}
+\faculty{Wydział Informatyki, Elektroniki i Telekomunikacji}
+\department{Instytut Informatyki}
+\supervisor{dr inż. Katarzyna Rycerz}
+\degreeprogramme{Informatyka}
+\degreetype{Stacjonarne}
+\date{2022}
+
+\abstractPL{Kwantowa teoria gier jest stosunkowo nową dziedziną nauki, która łączy mechanikę kwantową i klasyczną teorię gier. Teoretyczna analiza gier kwantowych może być trudna ze względu na skomplikowane obliczenia macierzowe z wieloma wyrażeniami trygonometrycznymi, które rosną wykładniczo wraz ze wzrostem liczby graczy. W~niniejszej pracy skupimy się na wspomaganej programowo analizie gier kwantowych w schemacie Eiserta-Wilkensa-Lewensteina oraz opiszemy i porównamy symboliczne i numeryczne podejścia do takiej analizy. Zaproponujemy algorytmy  do znajdowania najlepszych odpowiedzi i równowag Nasha w strategiach czystych, a~także cykli najlepszych odpowiedzi, które mogą być wykorzystywane do konstruowania strategii mieszanych posiadających probabilistyczne równowagi Nasha. Na przykładzie kwantowego dylematu więźnia z różnymi parametryzacjami zademonstrujemy również funkcjonalności autorskiej biblioteki \texttt{ewl}, która może być wykorzystana do wyprowadzania złożonych formuł w postaci symbolicznej. Uruchomimy również dwu- i~trzyosobowe warianty tej gry na symulatorach kwantowych oraz na~rzeczywistym urządzeniu kwantowym IBM Q, porównamy wyniki z przewidywaniami teoretycznymi i~sformułujemy wnioski na temat obecnego stanu urządzeń opartych o~bramki kwantowe.}
+% słowa kluczowe: gry kwantowe, strategie kwantowe, schemat EWL, równowagi Nasha, informatyka kwantowa, obliczenia symboliczne
+
+\abstractEN{Quantum game theory is a relatively new field of study that combines quantum mechanics and classical game theory. Theoretical analysis of quantum games may be challenging due to complex matrix calculations involving numerous trigonometric expressions, which scale exponentially with increasing number of players. In this thesis, we focus on software-aided analysis of quantum games in Eisert-Wilkens-Lewenstein scheme as well as introduce, evaluate and compare symbolic and numerical approaches towards such analysis. We propose algorithms for finding best responses and Nash equilibria in pure strategies as well as best response cycles which can be used for constructing mixed strategies with probabilistic Nash equilibria. We also demonstrate the functionalities of our library \texttt{ewl}, which can be utilized for deriving complex formulas in symbolic form, on the example of Quantum Prisoner's Dilemma with different parametrizations. Finally, we execute two- and three-player variants of this game on quantum simulators as well as on a real quantum IBM Q device, compare the results with theoretical expectations, and draw conclusions on the current state of quantum gate-based devices.}
+% keywords: quantum games, quantum strategies, EWL protocol, Nash equilibria, quantum computing, symbolic calculations
+
+\dedication{I would like to express my deepest and most sincere gratitude to my supervisor, dr inż. Katarzyna Rycerz for her guidance, advice and patience as well as immense knowledge and experience in the field of quantum computing that she is always willing to share. Her continuous support and motivation were a huge help for me while writing this thesis.
+
+\vspace{0.15cm}
+I would also like to thank prof. dr hab. Marek Szopa from University of Economics in~Katowice and dr hab. Piotr Frąckiewicz, prof. AP from Pomeranian University in Słupsk for sharing their vast knowledge in the field of quantum games, suggesting the possible directions of research, and exchanging ideas.
+
+\vspace{0.15cm}
+I would also like to thank dr inż. Marian Bubak for his constructive remarks, fruitful discussions and motivation during seminars that helped me accomplish this work.
+
+\vspace{0.15cm}
+Last but not least, I would like to thank inż. Piotr Kotara for excellent cooperation and enthusiasm during the work on \texttt{ewl} library.}
+
+\usepackage[backend=biber,doi=true,url=false]{biblatex}
+\addbibresource{bibliography.bib}
+
+\usepackage{subfiles}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\graphicspath{ {images/} }
+
+\usepackage{qcircuit}
+\usepackage{braket}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{makecell}
+\usepackage{mathtools}
+\usepackage{pdfpages}
+\usepackage[nameinlink]{cleveref}
+
+\usepackage[title,toc]{appendix}
+\KOMAoptions{numbers=noendperiod}
+
+\usepackage{tablefootnote}
+\usepackage{pifont}
+
+\usepackage{algorithm2e}
+\RestyleAlgo{ruled}
+\SetKwComment{Comment}{/* }{ */}
+\DontPrintSemicolon
+
+\DeclareMathOperator*{\argmax}{argmax} % no space, limits underneath in displays
+
+\def\C{\mathbb{C}}
+\def\H{^\dag}
+\def\payoff{\$}
+\def\br{\text{best response}}
+\def\tens{\otimes}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{theorem}{Theorem}[section]
+
+\begin{document}
+
+\frontmatter
+\maketitle
+\tableofcontents
+
+\mainmatter
+
+\subfile{sections/1_introduction}
+
+\subfile{sections/9_summary}
+
+\appendix
+
+\subfile{sections/B_abstract}
+
+\cleardoublepage
+\listoffigures
+
+\cleardoublepage
+\listoftables
+
+\cleardoublepage
+\listofalgorithms
+\addcontentsline{toc}{chapter}{List of Algorithms}
+
+\subfile{sections/list_of_symbols}
+
+\cleardoublepage
+\nocite{*}
+\printbibliography
+
+\end{document}

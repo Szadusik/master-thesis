@@ -1,0 +1,77 @@
+\documentclass[../main.tex]{subfiles}
+\begin{document}
+
+\setcounter{chapter}{8}
+\chapter{Summary}
+\label{chap:9}
+
+In this chapter, we will summarize the achieved goals in terms of research objectives, formulate general conclusions, and suggest possible directions for further research.
+
+\section{Achieved goals}
+
+Realizing the complexity of the calculations related to the analysis of quantum games, we began our work by designing and implementing a utility tool for performing symbolic calculations of various properties of quantum games in the EWL protocol. As a result, we created a Python library named \texttt{ewl} that combines quantum games with symbolic calculations and interfaces with IBM Q systems, offering the following functionalities:
+\begin{itemize}
+    \item symbolic calculation of entanglement operator $J$, amplitudes of the state vector,  distribution of possible game outcomes and payoff functions in analytic form for arbitrary initial state of the game and arbitrary number of players
+    \item implementation of several popular quantum strategy parametrizations as well as possibility to define custom ones
+    \item integration with IBM Q quantum simulators as well as real quantum devices using Qiskit framework
+\end{itemize}
+Symbolic expressions calculated by the library were critical for further experiments. Moreover, thanks to the library, it was possible to find minor inconsistencies in quite relevant formulas in 3 independent publications as described in \autoref{sec:8_verification}.
+
+Being able to execute arbitrary quantum games in the EWL protocol on IBM Q simulators and devices, we successfully performed the following experiments as an extension of Filip Galas' master thesis \cite{galas2019quantum}, in particular we:
+\begin{itemize}
+    \item executed two-player variant of Quantum Prisoner's on statevector simulator, QASM simulator as well as a real quantum device \texttt{ibmq\_quito} and compared the results with theoretical expectations
+    \item repeated the experiment for a generalized case of the game with three players and explained the influence of the underlying logical architecture of the quantum device as well as the transpiling process
+\end{itemize}
+In the theoretical part of the thesis we focused on the derivation and description of algorithms for searching for best responses and Nash equilibria. More specifically, we:
+\begin{itemize}
+    \item formulated the best response search task as an optimization problem
+    \item proposed a numerical algorithm for finding best response based on existing optimization methods such as Powell or Nelder-Mead
+    \item evaluated the performance of 12 different variants of this numerical algorithm
+    \item presented an alternative way of finding the best response in the special case of quantum games with full $\text{SU}(2)$ parametrizations by solving a system of equations and explained why it cannot be applied for other classes of parametrizations
+    \item described a symbolic approach towards finding Nash equilibria in pure states
+    \item reduced the task of finding best response strategy from trigonometric function maximization to solving a simple system of equations
+\end{itemize}
+
+Finally, we tested the algorithms on real-world examples of quantum games and:
+\begin{itemize}
+    \item symbolically proved that Quantum Prisoner's Dilemma with $U(\theta, \phi, \alpha)$ parametrization has no Nash equilibria in pure states
+    \item symbolically found 4 best response cycles of length 4 in the aforementioned variant of quantum game
+    \item numerically found Nash equilibrium in Quantum Prisoner's Dilemma with original $U(\theta, \phi)$ parametrization when starting from $U(\pi, 0)$ strategy
+    \item numerically found a whole family of best response cycles of length 2 in the aforementioned game starting from a random strategy
+    \item numerically found a best response cycle of length 4 in Quantum Prisoner's Dilemma with $U(\theta, \phi, \alpha)$ as well as Frąckiewicz-Pykacz parametrization
+\end{itemize}
+
+\clearpage
+\section{Conclusions}
+\label{sec:9_conclusions}
+
+The research conducted for this thesis leads to the following conclusions:
+
+\begin{itemize}
+    \item Existing software for scientific computing may be successfully utilized for the purpose of theoretical analysis of various properties of quantum games in the EWL protocol. In particular, \texttt{ewl} library is a useful tool for deriving complex formulas describing generalized variants of such quantum games, for instance with more players.
+
+    \item When implementing quantum games for IBM Q, \texttt{Operators} library can be used to construct arbitrary quantum gates instead of manual decomposition of entanglement operator.
+    
+    \item For three-player variant of Quantum Prisoner's Dilemma, the results of the experiment are far from ideal. Most likely, high decoherence is caused by the length of the transpiled version of the quantum circuit in terms of number of quantum layers due to the underlying logical architecture of quantum device.
+    
+    \item Knowing the best response function in analytic form we can find or prove the lack existence of Nash equilibria in pure strategies by solving a fixed-point equation symbolically.
+    
+    \item Due to lack of direct support for certain types of parametrized functions and equations, Mathematica was not able to find best response function symbolically. Despite numerous attempts of reducing the complexity of the input, the task still could not be solved in a reasonable time, similarly using SymPy.
+    
+    \item Among 12 tested variants of the numerical algorithm of finding best response, Powell method with bounds disabled as zero as starting point achieved the highest hit rate of 99.94\%.
+    
+    \item When it comes to symbolic calculations, Mathematica is a clear winner in terms of performance, because its kernel is implemented in C/C++, whereas SymPy is written entirely in Python, which is an interpreted language. Moreover, SymPy expressions are immutable and thus have a larger memory footprint. On the other hand, SymPy is open-source, free of charge, and offers an elegant Python interface and therefore can be easily and directly integrated with Qiskit, as opposed to Mathematica which uses custom WolframScript language and has closed-source codebase.
+    
+    \item Finding best responses and Nash equilibria using numerical methods is far more efficient than using symbolic algorithms, however involves numerical errors and requires many iterations. On the other hand, the major advantage of symbolic approach is the exactness of the solution and the possibility to draw conclusions from its analytic form.
+\end{itemize}
+
+\clearpage
+\section{Future works}
+
+Among many possible ideas for future research, the most desirable direction would be definitely related to finding best response function symbolically. Despite numerous attempts involving simplification of the input as well as reduction to other kinds of problems, we were not able to obtain a generic formula for the best reply to arbitrary strategy of the opponent using Mathematica or SymPy. If we knew the best response function in analytic form, we could find whole families of Nash equilibria in symbolic form for arbitrary quantum game in the EWL scheme, which is ineffective and challenging with the numerical approach.
+
+Another possible improvement is related to the numerical algorithms of finding best response, which currently are limited to finding only one global maximum, while in general there may exist more such points. Instead, methods such as SHGO \cite{endres2018simplicial} may be utilized to find multiple global maxima to avoid the possibility of missing some best responses or equilibria strategy profiles.
+
+Finally, the \texttt{ewl} library, which was developed as part of the work, greatly facilitates the analysis more general variants of quantum games in the EWL protocol, for instance involving symbolic parameters or simply with more players, and thus provides new opportunities for quantum game theory researchers. A particularly interesting topic seems to be the study of influence of the underlying quantum computer architecture, especially connections between qubits, on the noise levels in quantum games with three or more players.
+
+\end{document}
