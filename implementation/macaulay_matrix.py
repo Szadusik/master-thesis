@@ -85,9 +85,9 @@ def create_macaulay_matrix(poly_system: PolynomialSystem, degree: int):
 
     rows_polynomials = []
     for mono in monomials:
-        d_mono = mono.degree()
+        d_mono = mono.total_degree()
         for f in poly_system.equations:
-            d_poly = f.degree()
+            d_poly = f.total_degree()
             if d_mono <= degree - d_poly:
                 rows_polynomials.append(f * mono)
     
