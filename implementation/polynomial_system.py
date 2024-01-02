@@ -1,5 +1,6 @@
 import numpy as np
 import sympy as sp
+from sympy import ZZ
 from sortedcollections import OrderedSet
 import random
 
@@ -7,8 +8,9 @@ import random
 
 class PolynomialSystem:
     def __init__(self) -> None:
-        self.equations: list = []
+        self.equations: list[sp.Poly] = []
         self.variables: OrderedSet = OrderedSet()
+        self.domain = ZZ
 
     '''
     Load polynomial equations from given file. Each equation is placed in one line of file and their format should be
@@ -29,17 +31,25 @@ class PolynomialSystem:
                 variables.append(variable)
 
         variables.sort(key=str)
-        self.assign_gens_to_equations(variables)
+        self.variables = OrderedSet(variables)
+        for equation in self.equations:
+            equation = sp.Poly.from_poly(equation, gens=equation.gens, domain=self.domain)
+
 
     '''
-    Apply/change generating symbols of polynomials inside the system.
+    Create a new polynomial system based on the original system. Given new set of variables equations are
+    adjusted to new variables. Variables not present in the provided list are considered as constants.
     Input:
         variables - List of symbols defining new system of variables
     '''
-    def assign_gens_to_equations(self, variables: list | set) -> None:
-        self.variables = OrderedSet(variables)
+    def generate_adjusted_system(self, variables: list | set):
+        poly_system = PolynomialSystem()
+        poly_system.variables = OrderedSet(variables)
         for equation in self.equations:
-            equation = sp.Poly(equation, list(self.variables))
+            new_equation = sp.Poly.from_poly(equation, *list(variables))
+            poly_system.equations.append(new_equation)
+        return poly_system
+    
 
     '''
     Get k random variables from a system.
@@ -49,7 +59,23 @@ class PolynomialSystem:
     def get_random_variables(self, k: int) -> list[sp.Symbol]:
         return random.sample(self.variables, k)
 
-
-
-system = PolynomialSystem()
-system.load_equations_from_file("/Users/lukaszsochacki/Desktop/Studia/Magisterka/master-thesis/implementation/test_data/test.txt")
+    '''
+    Solve system equation based on provided variables and equations
+    Input:
+        None (Parameters are present inside object)
+    Return:
+        Values for variables that are solution for system
+    '''
+    def solve_equation_system(self) -> dict:
+        return sp.solve(self.equations, self.variables)
+    
+    
+    def replace_variables(self, var_map: dict):
+        for var in var_map.keys():
+            if var in self.variables:
+                self.variables.remove(var)
+        
+        for eq in self.equations:
+            idx = self.equations.index(eq)
+            reduced_eq = eq.subs(var_map)
+            self.equations[idx] = sp.Poly(reduced_eq)

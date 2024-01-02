@@ -19,9 +19,7 @@ def generate_monomials(symbols: set, d: int) -> set:
     if d < 0:
         raise ValueError('Degree has to be a non negative value')
     
-    zero_degree_poly = sp.Poly(1, list(symbols))
-    monomials.add(zero_degree_poly) # Case for zero degree monomial
-    
+    monomials.add(sp.Poly(1, list(symbols))) # Case for zero degree monomial
     for degree in range(1, d+1):
         available_monomials = [p for p in itertools.product(symbols, repeat=degree)]
         for combination in available_monomials:
@@ -59,9 +57,9 @@ Input:
 Output:
     Numpy array representing coefficients of polynomial related to monomials.
 '''
-def poly_to_vector(poly: sp.Poly, monomials: set[sp.Poly]) -> np.ndarray:
+def poly_to_vector(poly: sp.Poly, monomials: set[sp.Poly]) -> list:
     monomial_tuples = create_monomial_tuples(monomials)
-    poly_vector: np.ndarray = np.zeros(len(monomial_tuples))
+    poly_vector: list = [0]*len(monomial_tuples)
     terms: dict = poly.as_dict()
     
     for degree_tuple, coef in terms.items():
