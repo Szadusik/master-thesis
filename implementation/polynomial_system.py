@@ -1,5 +1,6 @@
 import random
 import re
+import itertools
 import numpy as np
 import sympy as sp
 
@@ -7,8 +8,8 @@ from sympy import ZZ, grevlex
 from sortedcollections import OrderedSet
 from utils import generate_monomials
 
-''' Class to store polynomial equations and information about them'''
 
+''' Class to store polynomial equations and information about them'''
 class PolynomialSystem:
     def __init__(self) -> None:
         self.equations: list[sp.Poly] = []
@@ -78,6 +79,9 @@ class PolynomialSystem:
         return poly_system
     
 
+    def get_k_variables(self, k: int) -> list[tuple[sp.Symbol]]:
+        return list(itertools.combinations(self.variables, k))
+    
     '''
     Get k random variables from a system.
     Input:
@@ -97,7 +101,7 @@ class PolynomialSystem:
         return sp.solve(self.equations, self.variables)
     
     
-    def replace_variables(self, var_map: dict):
+    def specialize_variables(self, var_map: dict):
         for var in var_map.keys():
             if var in self.variables:
                 self.variables.remove(var)
@@ -105,7 +109,7 @@ class PolynomialSystem:
         for eq in self.equations:
             idx = self.equations.index(eq)
             reduced_eq = eq.subs(var_map)
-            self.equations[idx] = sp.Poly(reduced_eq)
+            self.equations[idx] = sp.Poly(reduced_eq, gens=self.variables)
 
 # system = PolynomialSystem()
 # system.load_equations_from_file('implementation/test_data/mq-chall-test.txt')

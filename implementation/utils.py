@@ -84,3 +84,8 @@ def create_grevlex_monomials(var_count: int) -> list:
     
     poly: sp.Poly = sum(list(monomials))
     return poly.as_expr().as_ordered_terms(order=grevlex)
+
+
+def gen_possible_coefs(k: int) -> list[tuple]:
+    coefs = [0, 1]
+    return list(itertools.product(coefs, repeat=k))
