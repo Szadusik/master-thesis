@@ -1,5 +1,6 @@
 import numpy as np
 import sympy as sp
+from sympy import grevlex
 import itertools
 from sortedcollections import OrderedSet
 
@@ -68,3 +69,18 @@ def poly_to_vector(poly: sp.Poly, monomials: set[sp.Poly]) -> list:
             poly_vector[idx] = coef
     
     return poly_vector
+
+
+'''
+Generate monomials ordered in reverse graded lexographical order (maybe we can adjust first function later)
+Input:
+    var_count: int - Number of variables
+Output:
+    List of terms sorted in 'grevlex' order. Can be used to create polynomials.
+'''
+def create_grevlex_monomials(var_count: int) -> list:
+    symbols = [sp.Symbol(f'x_{i+1}') for i in range(var_count)]
+    monomials = generate_monomials(symbols, 2) 
+    
+    poly: sp.Poly = sum(list(monomials))
+    return poly.as_expr().as_ordered_terms(order=grevlex)

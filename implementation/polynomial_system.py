@@ -1,8 +1,11 @@
+import random
+import re
 import numpy as np
 import sympy as sp
-from sympy import ZZ
+
+from sympy import ZZ, grevlex
 from sortedcollections import OrderedSet
-import random
+from utils import generate_monomials
 
 ''' Class to store polynomial equations and information about them'''
 
@@ -13,28 +16,52 @@ class PolynomialSystem:
         self.domain = ZZ
 
     '''
-    Load polynomial equations from given file. Each equation is placed in one line of file and their format should be
-    valid with expression format of Symp. Additionally, equation has to be written as polynomial.
+    Load polynomial equations from given file. Format has to be the same as the one present
+    in Fumuoka MQ challenge. For now support excluded for GF(2^8)
     Input:
         filepath - path to file containing equations that will be read
-    
     Output:
-        None - Equations/variables will be stored inside class
+       Equations/variables will be stored inside class object
     '''
-    def load_equations_from_file(self, filepath: str) -> None:
-        file = open(filepath, "r+")
-        variables: list = []
-        for equation in file:
-            poly: sp.Poly = sp.polys.polytools.poly_from_expr(equation)
-            self.equations.append(poly[0])
-            for variable in poly[1]['gens']:
-                variables.append(variable)
+    def load_equations_from_file(self, path: str) -> None:
+        mq_file = open(path, "r")
+        mq_data = mq_file.readlines()
+        info, coefs = mq_data[:5], mq_data[5:]
 
-        variables.sort(key=str)
-        self.variables = OrderedSet(variables)
-        for equation in self.equations:
-            equation = sp.Poly.from_poly(equation, gens=equation.gens, domain=self.domain)
+        #Load file information
+        domain = info[0].split(" : ")[1].replace('\n', '')
+        n = int(info[1].split(" : ")[1])
+        m = int(info[2].split(" : ")[1])
 
+        #Prepare variables and terms (columns in file)
+        symbols = [sp.Symbol(f'x_{i+1}') for i in range(n)]
+        self.variables = OrderedSet(symbols)
+        monomials = generate_monomials(symbols, 2) 
+        poly: sp.Poly = sum(list(monomials))
+        terms = poly.as_expr().as_ordered_terms(order=grevlex)
+
+        #Read coefficients and apply to terms
+        current_coefs = ""
+        for line in coefs:
+            line = line.replace('\n', '')
+            if line == "" or re.match(r'\*+', line):
+                continue
+            else:
+                current_coefs += line
+                if ';' in line:
+                    current_coefs = current_coefs.replace(' ;', '')
+                    poly = self.__create_poly(terms, current_coefs)
+                    self.equations.append(poly)
+                    current_coefs = ""
+
+
+    def __create_poly(self, terms, coefs) -> sp.Poly:
+        coefs = coefs.split(' ')
+        poly = 0
+        #print(f'Terms count: {len(terms)}, coefs: {len(coefs)}')
+        for term, coef in zip(terms, coefs):
+            poly += int(coef)*term
+        return sp.Poly(poly)
 
     '''
     Create a new polynomial system based on the original system. Given new set of variables equations are
@@ -79,3 +106,8 @@ class PolynomialSystem:
             idx = self.equations.index(eq)
             reduced_eq = eq.subs(var_map)
             self.equations[idx] = sp.Poly(reduced_eq)
+
+# system = PolynomialSystem()
+# system.load_equations_from_file('implementation/test_data/mq-chall-test.txt')
+# print(system.variables)
+# print(system.equations)
