@@ -6,6 +6,6 @@ logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s',
                     filename='myapp.log', 
                     level=logging.DEBUG)
 system = PolynomialSystem()
-system.load_equations_from_file("/Users/lukaszsochacki/Desktop/Studia/Magisterka/master-thesis/implementation/test_data/test2.txt")
-
-boolean_solve(system, 2)
+system.load_equations_from_file('implementation/test_data/mq-chall-test.txt')
+results = boolean_solve(system, 8)
+system.verify_solutions(results)

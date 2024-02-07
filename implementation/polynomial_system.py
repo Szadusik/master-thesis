@@ -4,7 +4,7 @@ import itertools
 import numpy as np
 import sympy as sp
 
-from sympy import ZZ, grevlex
+from sympy import ZZ, grevlex, GF
 from sortedcollections import OrderedSet
 from utils import generate_monomials
 
@@ -14,7 +14,7 @@ class PolynomialSystem:
     def __init__(self) -> None:
         self.equations: list[sp.Poly] = []
         self.variables: OrderedSet = OrderedSet()
-        self.domain = ZZ
+        self.domain = GF(2)
 
     '''
     Load polynomial equations from given file. Format has to be the same as the one present
@@ -37,7 +37,7 @@ class PolynomialSystem:
         #Prepare variables and terms (columns in file)
         symbols = [sp.Symbol(f'x_{i+1}') for i in range(n)]
         self.variables = OrderedSet(symbols)
-        monomials = generate_monomials(symbols, 2) 
+        monomials = generate_monomials(symbols, 2, domain=self.domain) 
         poly: sp.Poly = sum(list(monomials))
         terms = poly.as_expr().as_ordered_terms(order=grevlex)
 
@@ -62,7 +62,7 @@ class PolynomialSystem:
         #print(f'Terms count: {len(terms)}, coefs: {len(coefs)}')
         for term, coef in zip(terms, coefs):
             poly += int(coef)*term
-        return sp.Poly(poly)
+        return sp.Poly(poly, domain=self.domain)
 
     '''
     Create a new polynomial system based on the original system. Given new set of variables equations are
@@ -109,9 +109,26 @@ class PolynomialSystem:
         for eq in self.equations:
             idx = self.equations.index(eq)
             reduced_eq = eq.subs(var_map)
-            self.equations[idx] = sp.Poly(reduced_eq, gens=self.variables)
+            self.equations[idx] = sp.Poly(reduced_eq, gens=self.variables, domain=self.domain)
+
+    
+    def verify_solutions(self, solutions: list[dict]):
+        for solution in solutions:
+            print(f'Checking solution: {solution}')
+            print('----------------------------------')
+            for eq in self.equations:
+                status = ""
+                eq_result = eq
+                eq_result = eq_result.subs(solution)
+                if eq_result.subs(solution) == 0:
+                    status = u'\u2713'
+                    result = f'{eq_result} == 0'
+                else:
+                    status = u'X'
+                    result = f'{eq_result} != 0'
+                print(f'Equation {self.equations.index(eq) + 1} ---> ' + status + ' ' + result)
 
 # system = PolynomialSystem()
 # system.load_equations_from_file('implementation/test_data/mq-chall-test.txt')
 # print(system.variables)
-# print(system.equations)
+# print(system.equations[0])
