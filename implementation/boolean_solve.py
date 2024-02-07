@@ -7,11 +7,12 @@ import copy
 import sympy as sp
 import numpy as np
 
-TIMEOUT = 100 # If proper matrix/sol cant be found, an empty is returned
 '''
 Perform BooleanSolve attack on MQ system.
 Input:
     poly_system - MQ system that we will attempt to break
+Output:
+    Set of solutions for provided polynomial system
 
 '''
 def boolean_solve(poly_system: PolynomialSystem, k: int) -> dict:
@@ -20,7 +21,7 @@ def boolean_solve(poly_system: PolynomialSystem, k: int) -> dict:
 
     # Calculate witness degree
     logging.info(f'Calculating witness degree for (m,n,k) = {(m, n, k)}')
-    witness_degree: int = MacaulayMatrix.calculate_witness_degree(m, n, k)
+    witness_degree: int = MacaulayMatrix.calculate_witness_degree_alternative(m, n, k)
     logging.debug(f'Calculated witness degree = {witness_degree}')
 
     solutions = []
@@ -43,32 +44,19 @@ def boolean_solve(poly_system: PolynomialSystem, k: int) -> dict:
             macaulay.create_macaulay_matrix(adjusted_poly_system)
 
             if macaulay.solve_macaulay_equation():
-                print(adjusted_poly_system.equations)
+                #print(f'Potential solution for {val_map}')
                 nk_solution = adjusted_poly_system.solve_equation_system()
                 logging.debug(f'Found solutions for {n-k} variables: {nk_solution}')
-                print(nk_solution)
-
-
-    return
-
-    counter = 0
-    while counter < TIMEOUT:
-        logging.debug('Solving linear system from Macaulay matrix')
-        if macaulay.solve_macaulay_equation():
-            logging.debug(f'Linear system is inconsistent, finding solution for {k_variables}...')
-            break
-    
-        logging.debug('Linear system is consistent, retrying new variables...')
-        counter+=1
-
-    if(counter == TIMEOUT):
-        logging.warn('Timeout has been reached, returning empty solution.')
-        return {}
-    
-    #Finding solutions for n-k variables
-    nk_solution = adjusted_poly_system.solve_equation_system()
-    logging.debug(f'Found solutions for {n-k} variables: {nk_solution}')
-    return nk_solution
+                if(len(nk_solution) != 0):
+                    # print(nk_solution)
+                    # print(nk_solution[0])
+                    # print(adjusted_poly_system.variables)
+                    solution_map = val_map
+                    solution_map.update(dict(zip(list(adjusted_poly_system.variables), list(nk_solution[0]))))
+                    if solution_map not in solutions:
+                        solutions.append(solution_map)
+    print(solutions)
+    return solutions
 
 
 

@@ -11,7 +11,7 @@ class MacaulayMatrix:
 
     ''' 
     Calculate witness degree which used to determine degree of Macaulay matrix. Calculation based on Hilbert series. 
-    Index of non-zero element is counted from lowest degree element.
+    Index of non- element is counted from lowest degree element.
 
     Input:
         m - Number of equations inside system
@@ -24,15 +24,34 @@ class MacaulayMatrix:
         nominator = (1 + t)**(n - k)
         denominator = (1 - t)*((1 + t**2)**m)
 
-        q, r = sp.div(nominator, denominator)
+        q, r = sp.div(nominator, denominator, gens=[t])
         poly_res: sp.Poly = (q + r).as_poly()
         
         coeffs = poly_res.all_coeffs()
         coeffs.reverse()
-        nonzero_indices = np.nonzero(coeffs)[0]
-        return nonzero_indices[0] if len(nonzero_indices) != 0 else -1
+        print(coeffs)
+        nonzero_indices = np.nonzero(coeffs)[0] #index of first non-zero element
+        return nonzero_indices[0] + 1 if len(nonzero_indices) != 0 else len(coeffs)
 
 
+    @staticmethod
+    def calculate_witness_degree_alternative(m: int, n: int, k: int) -> int:
+        t = sp.Symbol('t')
+        nominator = (1 + t)**(n - k)
+        denominator = (1 - t)*((1 + t**2)**m)
+
+        q, r = sp.div(nominator, denominator, gens=[t])
+        poly_res: sp.Poly = (q + r).as_poly()
+        
+        print(poly_res)
+        coeffs = poly_res.all_coeffs()
+        coeffs.reverse()
+        for i in range(len(coeffs)):
+            if coeffs[i] <=0:
+                return i
+        return len(coeffs)
+
+    
     ''' 
     Generate Macaulay matrix for given system of polynomial equations and predefinied degree of matrix.
     Input:
