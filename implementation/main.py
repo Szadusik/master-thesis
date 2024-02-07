@@ -1,11 +1,11 @@
 from polynomial_system import PolynomialSystem
-from boolean_solve import boolean_solve, boolean_solve_solver
+from boolean_solve import boolean_solve
 import logging
 
-logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s', filename='myapp.log', level=logging.DEBUG)
-
+logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s', 
+                    filename='myapp.log', 
+                    level=logging.DEBUG)
 system = PolynomialSystem()
-system.load_equations_from_file("/Users/lukaszsochacki/Desktop/Studia/Magisterka/master-thesis/implementation/test_data/test2.txt")
-
-#boolean_solve(system, 2)
-boolean_solve_solver(system, 3)
+system.load_equations_from_file('implementation/test_data/mq-chall-test.txt')
+results = boolean_solve(system, 8)
+system.verify_solutions(results)

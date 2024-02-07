@@ -1,6 +1,6 @@
 import numpy as np
 import sympy as sp
-from sympy import grevlex
+from sympy import grevlex, ZZ
 import itertools
 from sortedcollections import OrderedSet
 
@@ -14,7 +14,7 @@ Input:
 Output:
     List of all monomials (sympy.Poly) up to degree of d
 '''
-def generate_monomials(symbols: set, d: int) -> set:
+def generate_monomials(symbols: set, d: int, domain = ZZ) -> set:
     monomials = OrderedSet()
     
     if d < 0:
@@ -27,7 +27,7 @@ def generate_monomials(symbols: set, d: int) -> set:
             new_monomial = 1
             for symbol in combination:
                 new_monomial = new_monomial * symbol
-            monomials.add(sp.Poly(new_monomial, list(symbols)))
+            monomials.add(sp.Poly(new_monomial, list(symbols), domain=domain))
 
     return monomials
 
@@ -84,3 +84,8 @@ def create_grevlex_monomials(var_count: int) -> list:
     
     poly: sp.Poly = sum(list(monomials))
     return poly.as_expr().as_ordered_terms(order=grevlex)
+
+
+def gen_possible_coefs(k: int) -> list[tuple]:
+    coefs = [0, 1]
+    return list(itertools.product(coefs, repeat=k))
