@@ -2,8 +2,6 @@
 import pennylane as qml
 import numpy as np
 
-# Plotting  
-import matplotlib.pyplot as plt
 
 n_qubits = 3  # Number of system qubits.
 n_shots = 10 ** 6  # Number of quantum measurements.

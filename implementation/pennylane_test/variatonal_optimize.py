@@ -1,7 +1,8 @@
 from vqls import *
-import numpy as np
-import pennylane as qml
+from pennylane import numpy as np
 
+import pennylane as qml
+import matplotlib.pyplot as plt
 
 n_qubits = 3  # Number of system qubits.
 n_shots = 10 ** 6  # Number of quantum measurements.
@@ -17,13 +18,22 @@ w = q_delta * np.random.randn(n_qubits)
 
 #Optimization costs
 
-# opt = qml.GradientDescentOptimizer(eta)
+opt = qml.GradientDescentOptimizer(eta)
 
-# cost_history = []
-# for it in range(steps):
-#     w, cost = opt.step_and_cost(cost_loc, w)
-#     print("Step {:3d}       Cost_L = {:9.7f}".format(it, cost))
-#     cost_history.append(cost)
+cost_history = []
+for it in range(steps):
+    w, cost = opt.step_and_cost(cost_loc, w)
+    print("Step {:3d}       Cost_L = {:9.7f}".format(it, cost))
+    cost_history.append(cost)
+
+
+# plt.style.use("seaborn")
+# plt.plot(cost_history, "g")
+# plt.ylabel("Cost function")
+# plt.xlabel("Optimization steps")
+# plt.show()
+
+#  SOLUTION TEST
 
 Id = np.identity(2)
 Z = np.array([[1, 0], [0, -1]])
@@ -69,5 +79,7 @@ q_probs = np.bincount(samples) / n_shots
 print('Comparison')
 
 print("Classical: x_n^2 =\n", c_probs)
-
 print("Quantum |<x|n>|^2=\n", q_probs)
+print(f'Classic x: {x}')
+
+#print(f'Quantum x?: {samples}')
