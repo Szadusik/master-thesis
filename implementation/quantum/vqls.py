@@ -5,7 +5,7 @@ import pennylane as qml
 from pennylane import numpy as np
 import importlib
 
-# TODO: Pass parameters in configuration e.x JSON file
+# TODO: Replace calls for class properties to a dict with loaded values
 
 # n_qubits = 3  # Number of system qubits.
 # n_shots = 10 ** 6  # Number of quantum measurements.
@@ -78,7 +78,7 @@ class VQLS:
         norm = 0.0
 
         for l in range(0, len(self.weights)):
-            for lp in range(0, len(c)):
+            for lp in range(0, len(self.weights)):
                 norm = norm + self.weights[l] * np.conj(self.weights[lp]) * self.mu(weights, l, lp, -1)
 
         return abs(norm)
@@ -98,6 +98,43 @@ class VQLS:
         # Cost function C_L
         return 0.5 - 0.5 * mu_sum / (self.n_qubits * self.psi_norm(weights))
     
+    
+    def optimize_weights(self):
+        np.random.seed(self.rng_seed)
+        w = self.q_delta * np.random.randn(self.n_qubits)
+
+        opt = qml.GradientDescentOptimizer(self.eta)
+
+        cost_history = []
+        for it in range(self.steps):
+            w, cost = opt.step_and_cost(self.cost_loc, w)
+            print("Step {:3d}       Cost_L = {:9.7f}".format(it, cost))
+            cost_history.append(cost)
+
+        # Printing results
+            
+        # plt.style.use("seaborn")
+        # plt.plot(cost_history, "g")
+        # plt.ylabel("Cost function")
+        # plt.xlabel("Optimization steps")
+        # plt.show()
+            
+        return w
+    
+    
+    def get_quantum_probabilities(self, optimized_weights):
+        #First call weight optimization to get valid results !
+        raw_samples = prepare_and_sample(self, optimized_weights)
+
+        # convert the raw samples (bit strings) into integers and count them
+        samples = []
+        for sam in raw_samples:
+            samples.append(int("".join(str(bs) for bs in sam), base=2))
+
+        q_probs = np.bincount(samples) / self.n_shots
+        return q_probs
+
+
     @staticmethod
     def get_parameters():
         with open('/Users/lukaszsochacki/Desktop/Studia/Magisterka/master-thesis/implementation/quantum/parameters.json', 'r') as j:
