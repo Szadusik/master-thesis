@@ -26,6 +26,7 @@ def boolean_solve(poly_system: PolynomialSystem, k: int) -> dict:
 
     solutions = []
     # We will need to look up all combinations of k variables
+    mac_min, mac_max = 10**6, 0
     symbols_combinations = poly_system.get_k_variables(k)
     for symbols in symbols_combinations:
         coefs_perm = gen_possible_coefs(k)
@@ -42,20 +43,24 @@ def boolean_solve(poly_system: PolynomialSystem, k: int) -> dict:
             logging.debug('Calculating Macaulay matrix...')
             macaulay = MacaulayMatrix(witness_degree)
             macaulay.create_macaulay_matrix(adjusted_poly_system)
-
             if macaulay.solve_macaulay_equation():
+                mac_size = macaulay.get_matrix_size()
+                mac_min, mac_max = min(mac_min, mac_size[0]), max(mac_max, mac_size[0])
                 #print(f'Potential solution for {val_map}')
+                #print(f'Macaulay matrix size: {macaulay.get_matrix_size()}')
                 nk_solution = adjusted_poly_system.solve_equation_system()
                 logging.debug(f'Found solutions for {n-k} variables: {nk_solution}')
                 if(len(nk_solution) != 0):
                     # print(nk_solution)
                     # print(nk_solution[0])
                     # print(adjusted_poly_system.variables)
+                    #print(f'Is system linear: {adjusted_poly_system.is_system_linear()}')
                     solution_map = val_map
                     solution_map.update(dict(zip(list(adjusted_poly_system.variables), list(nk_solution[0]))))
                     if solution_map not in solutions:
                         solutions.append(solution_map)
     print(solutions)
+    print(f'Macaulay rows bounds: {(mac_min, mac_max)}')
     return solutions
 
 

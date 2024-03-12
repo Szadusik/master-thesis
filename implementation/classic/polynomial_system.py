@@ -89,7 +89,7 @@ class PolynomialSystem:
     '''
     def get_random_variables(self, k: int) -> list[sp.Symbol]:
         return random.sample(self.variables, k)
-
+    
     '''
     Solve system equation based on provided variables and equations
     Input:
@@ -128,7 +128,14 @@ class PolynomialSystem:
                     result = f'{eq_result} != 0'
                 print(f'Equation {self.equations.index(eq) + 1} ---> ' + status + ' ' + result)
 
-# system = PolynomialSystem()
+
+    def is_system_linear(self):
+        for eq in self.equations:
+            if eq.total_degree() > 2:
+                return False
+        return True
+
+ # system = PolynomialSystem()
 # system.load_equations_from_file('implementation/test_data/mq-chall-test.txt')
 # print(system.variables)
 # print(system.equations[0])

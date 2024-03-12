@@ -7,5 +7,5 @@ logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s',
                     level=logging.DEBUG)
 system = PolynomialSystem()
 system.load_equations_from_file('implementation/test_data/mq-chall-test.txt')
-results = boolean_solve(system, 8)
+results = boolean_solve(system, 6)
 system.verify_solutions(results)

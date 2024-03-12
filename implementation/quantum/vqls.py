@@ -3,7 +3,6 @@ import json
 import pennylane as qml
 
 from pennylane import numpy as np
-import importlib
 
 # TODO: Replace calls for class properties to a dict with loaded values
 

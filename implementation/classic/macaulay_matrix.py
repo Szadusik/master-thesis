@@ -96,5 +96,12 @@ class MacaulayMatrix:
 
         is_consistent = np.allclose(A @ solution, r)
         return not is_consistent
+    
 
+    def get_matrix_size(self) -> tuple[int, int]:
+        n = len(self.matrix)
+        m = 0
+        if n > 0:
+            m = len(self.matrix[0])
+        return n,m
         
