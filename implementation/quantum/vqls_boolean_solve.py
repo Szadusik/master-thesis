@@ -1,31 +1,31 @@
-from classic.polynomial_system import PolynomialSystem
-from classic.macaulay_matrix import MacaulayMatrix
-from classic.utils import gen_possible_coefs
-
 import logging
 import copy
 import sympy as sp
 import numpy as np
 
-'''
-Perform BooleanSolve attack on MQ system.
-Input:
-    poly_system - MQ system that we will attempt to break
-Output:
-    Set of solutions for provided polynomial system
+from quantum.polynomial_system import PolynomialSystem
+from quantum.macaulay_matrix import MacaulayMatrix
+from quantum.utils import gen_possible_coefs, get_classic_probabilities
+from quantum.vqls import VQLS
 
-'''
+
 def boolean_solve(poly_system: PolynomialSystem, k: int) -> dict:
+    '''
+    Perform BooleanSolve attack on MQ system.
+    Input:
+        poly_system - MQ system that we will attempt to break
+    Output:
+        Set of solutions for provided polynomial system
+
+    '''
     m: int = len(poly_system.equations)
     n: int = len(poly_system.variables)
 
-    # Calculate witness degree
     logging.info(f'Calculating witness degree for (m,n,k) = {(m, n, k)}')
     witness_degree: int = MacaulayMatrix.calculate_witness_degree_alternative(m, n, k)
     logging.debug(f'Calculated witness degree = {witness_degree}')
 
     solutions = []
-    # We will need to look up all combinations of k variables
     mac_min, mac_max = 10**6, 0
     symbols_combinations = poly_system.get_k_variables(k)
     for symbols in symbols_combinations:
@@ -44,8 +44,8 @@ def boolean_solve(poly_system: PolynomialSystem, k: int) -> dict:
             macaulay = MacaulayMatrix(witness_degree)
             macaulay.create_macaulay_matrix(adjusted_poly_system)
             if macaulay.solve_macaulay_equation():
-                print(f'Macaulay columns: {len(macaulay.matrix[0])}')
-                print(f'Macaulay boundaries: {mac_min, mac_max}')
+                call_VQLS(macaulay)
+
                 mac_size = macaulay.get_matrix_size()
                 mac_min, mac_max = min(mac_min, mac_size[0]), max(mac_max, mac_size[0])
                 #print(f'Potential solution for {val_map}')
@@ -66,4 +66,19 @@ def boolean_solve(poly_system: PolynomialSystem, k: int) -> dict:
     return solutions
 
 
+def call_VQLS(macaulay: MacaulayMatrix):
+    A = np.array(macaulay.matrix)
+    b = np.zeros(A.shape[0])
+    b[A.shape[0]-1] = 1
 
+    A_override = np.array([[1.0,  0.0,  0.0,  0.0,  0.4, 0.0,  0.0,  0.0], 
+                [0.0,  1.0,  0.0,  0.0,  0.0,  0.4, 0.0,  0.0],
+                [0.0,  0.0,  1.0,  0.0,  0.0,  0.0,  0.0,  0.0 ],
+                [0.0,  0.0,  0.0,  1.0,  0.0,  0.0,  0.0,  0.0 ],
+                [0.4, 0.0,  0.0,  0.0,  1.0,  0.0,  0.0,  0.0 ],
+                [0.0,  0.4, 0.0,  0.0,  0.0,  1.0,  0.0,  0.0 ],
+                [0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  1.0, 0.0 ],
+                [0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  1.0 ]])
+    b_override = np.array([0.35355339, 0.35355339, 0.35355339, 0.35355339, 0.35355339, 0.35355339,0.35355339, 0.35355339])
+    #VQLS.solve_linear_equation(A, b)
+    VQLS.solve_linear_equation(A_override, b_override)

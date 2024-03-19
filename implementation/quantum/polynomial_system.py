@@ -6,7 +6,7 @@ import sympy as sp
 
 from sympy import ZZ, grevlex, GF
 from sortedcollections import OrderedSet
-from classic.utils import generate_monomials
+from quantum.utils import generate_monomials
 
 
 ''' Class to store polynomial equations and information about them'''

@@ -1,9 +1,10 @@
 import numpy as np
 import sympy as sp
-from sympy import grevlex, ZZ
 import itertools
-from sortedcollections import OrderedSet
 import pennylane as qml
+
+from sympy import grevlex, ZZ
+from sortedcollections import OrderedSet
 
 
 def generate_monomials(symbols: set, d: int, domain = ZZ) -> set:
@@ -120,6 +121,8 @@ def pad_array(arr: np.array) -> np.array:
     max_size = closest_2_power(max(n, m))
     result = np.zeros((max_size, max_size))
     result[:n,:m] = arr
+    for i in range(n, max_size):
+        result[i] = result[i - n]
     return result
 
 
@@ -136,3 +139,28 @@ def matrix_into_unitaries(arr: np.array):
     else:
         LCU = qml.pauli_decompose(arr)
         return LCU.coeffs, LCU.ops
+    
+
+def make_symmetric(arr: np.array):
+    for i in range(0, arr.shape[0]):
+        for j in range(0, arr.shape[0]):
+            if (j < i):
+                arr[i][j] = arr[j][i] = (arr[i][j] +
+                                         arr[j][i]) // 2
+
+
+def get_classic_probabilities(A: np.array, b: np.array):
+        if np.linalg.det(A) == 0: #Singular matrix check
+            x, res, rank, s = np.linalg.lstsq(A , b, rcond=None)
+            # print(f'Residuals: {res}')
+            # print(f'Singular vals: {s}
+            print(f'Norm: {np.linalg.norm(x)}')
+            print(f'Is consistent: {np.allclose(A @ x, b)}')
+            if(np.linalg.norm(x) != 0):
+                print(f'Classic probabilities: {(x / np.linalg.norm(x)) ** 2}')
+        else:
+            print('NOT SINGULAR!')
+            A_inv = np.linalg.inv(A)
+            x = np.dot(A_inv, b)
+            print(f'Classic probabilities: {(x / np.linalg.norm(x)) ** 2}')
+            return (x / np.linalg.norm(x)) ** 2

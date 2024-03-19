@@ -1,8 +1,11 @@
 # Pennylane
 import json
+import math
 import pennylane as qml
 
+from scipy.linalg import ishermitian
 from pennylane import numpy as np
+from quantum.utils import pad_array, matrix_into_unitaries, make_symmetric, get_classic_probabilities
 
 # TODO: Replace calls for class properties to a dict with loaded values
 
@@ -19,17 +22,25 @@ from pennylane import numpy as np
 # c = np.array([1.0, 0.2, 0.2])
 
 class VQLS:
-    def __init__(self, weights=[1.0, 0.2, 0.2]) -> None:
+    def __init__(self, 
+                 weights=[1.0, 0.2, 0.2],
+                 n_qubits = 3,
+                 n_shots = 10**6,
+                 steps = 30,
+                 eta = 0.8,
+                 q_delta = 0.001,
+                 rng_seed = 0) -> None:
         self.weights = weights # Coefficients of the linear combination A = c_0 A_0 + c_1 A_1 ...
-        self.n_qubits = 3  # Number of system qubits.
-        self.n_shots = 10 ** 6  # Number of quantum measurements.
+        self.n_qubits = n_qubits  # Number of system qubits.
+        self.n_shots = n_shots  # Number of quantum measurements.
         self.tot_qubits = self.n_qubits + 1  # Addition of an ancillary qubit.
         self.ancilla_idx = self.n_qubits  # Index of the ancillary qubit (last position).
-        self.steps = 30  # Number of optimization steps
-        self.eta = 0.8  # Learning rate
-        self.q_delta = 0.001  # Initial spread of random quantum weights
-        self.rng_seed = 0  # Seed for random number generator
+        self.steps = steps  # Number of optimization steps
+        self.eta = eta  # Learning rate
+        self.q_delta = q_delta  # Initial spread of random quantum weights
+        self.rng_seed = rng_seed  # Seed for random number generator
         self.dev_mu = qml.device("lightning.qubit", wires=self.tot_qubits)
+        self.dev_x = qml.device("lightning.qubit", wires=self.n_qubits, shots=self.n_shots)
 
 
     def U_b(self):
@@ -66,8 +77,8 @@ class VQLS:
     def mu(self, weights, l=None, lp=None, j=None):
         """Generates the coefficients to compute the "local" cost function C_L."""
 
-        mu_real = local_hadamard_test(self, weights, l=l, lp=lp, j=j, part="Re")
-        mu_imag = local_hadamard_test(self, weights, l=l, lp=lp, j=j, part="Im")
+        mu_real = self.local_hadamard_test(weights, l, lp, j, "Re")
+        mu_imag = self.local_hadamard_test(weights, l, lp, j, "Im")
 
         return mu_real + 1.0j * mu_imag
     
@@ -86,7 +97,6 @@ class VQLS:
     def cost_loc(self, weights):
         """Local version of the cost function. Tends to zero when A|x> is proportional to |b>."""
         mu_sum = 0.0
-
         for l in range(0, len(self.weights)):
             for lp in range(0, len(self.weights)):
                 for j in range(0, self.n_qubits):
@@ -103,11 +113,10 @@ class VQLS:
         w = self.q_delta * np.random.randn(self.n_qubits)
 
         opt = qml.GradientDescentOptimizer(self.eta)
-
         cost_history = []
         for it in range(self.steps):
             w, cost = opt.step_and_cost(self.cost_loc, w)
-            print("Step {:3d}       Cost_L = {:9.7f}".format(it, cost))
+            #print("Step {:3d}       Cost_L = {:9.7f}".format(it, cost))
             cost_history.append(cost)
 
         # Printing results
@@ -120,10 +129,10 @@ class VQLS:
             
         return w
     
-    
+
     def get_quantum_probabilities(self, optimized_weights):
         #First call weight optimization to get valid results !
-        raw_samples = prepare_and_sample(self, optimized_weights)
+        raw_samples = self.prepare_and_sample(optimized_weights)
 
         # convert the raw samples (bit strings) into integers and count them
         samples = []
@@ -134,64 +143,75 @@ class VQLS:
         return q_probs
 
 
+    def local_hadamard_test(self, weights, l=None, lp=None, j=None, part=None):
+        @qml.qnode(self.dev_mu, interface="autograd")
+        def _local_hadamard_test(solver: VQLS, weights, l=None, lp=None, j=None, part=None):
+            # First Hadamard gate applied to the ancillary qubit.
+            qml.Hadamard(wires=solver.ancilla_idx)
+
+            # For estimating the imaginary part of the coefficient "mu", we must add a "-i"
+            # phase gate.
+            if part == "Im" or part == "im":
+                qml.PhaseShift(-np.pi / 2, wires=solver.ancilla_idx)
+
+            # Variational circuit generating a guess for the solution vector |x>
+            solver.variational_block(weights)
+
+            # Controlled application of the unitary component A_l of the problem matrix A.
+            solver.CA(l)
+
+            # Adjoint of the unitary U_b associated to the problem vector |b>.
+            # In this specific example Adjoint(U_b) = U_b.
+            solver.U_b()
+
+            # Controlled Z operator at position j. If j = -1, apply the identity.
+            if j != -1:
+                qml.CZ(wires=[solver.ancilla_idx, j])
+
+            # Unitary U_b associated to the problem vector |b>.
+            solver.U_b()
+
+            # Controlled application of Adjoint(A_lp).
+            # In this specific example Adjoint(A_lp) = A_lp.
+            solver.CA(lp)
+
+            # Second Hadamard gate applied to the ancillary qubit.
+            qml.Hadamard(wires=solver.ancilla_idx)
+
+            # Expectation value of Z for the ancillary qubit.
+            return qml.expval(qml.PauliZ(wires=solver.ancilla_idx))
+        return _local_hadamard_test(self, weights, l, lp, j, part)
+
+
+    def prepare_and_sample(self, weights):
+        @qml.qnode(self.dev_x, interface="autograd")
+        def _prepare_and_sample(solver : VQLS, weights):
+
+            # Variational circuit generating a guess for the solution vector |x>
+            solver.variational_block(weights)
+
+            # We assume that the system is measured in the computational basis.
+            # then sampling the device will give us a value of 0 or 1 for each qubit (n_qubits)
+            # this will be repeated for the total number of shots provided (n_shots)
+            return qml.sample()
+        return _prepare_and_sample(self, weights)
+    
+
     @staticmethod
-    def get_parameters():
-        with open('/Users/lukaszsochacki/Desktop/Studia/Magisterka/master-thesis/implementation/quantum/parameters.json', 'r') as j:
-            contents = json.loads(j.read())
-        return contents
+    def solve_linear_equation(arr: np.array, b: np.array):
+        matrix = pad_array(arr)
+        make_symmetric(matrix)
+        if(ishermitian(matrix)):
+            b_padded = np.zeros(matrix.shape[0])
+            b_padded[:b.shape[0]] = b
+            qubits = math.log2(matrix.shape[0])
+            coefs, unitaries = matrix_into_unitaries(matrix)
 
+            vqls = VQLS(weights=coefs, n_qubits=int(qubits))
+            optimized_weights = vqls.optimize_weights()
 
-parameters = VQLS.get_parameters()
-dev_mu = qml.device("lightning.qubit", wires=parameters['tot_qubits'])
-dev_x = qml.device("lightning.qubit", wires=parameters['n_qubits'], shots=parameters['n_shots'])
-
-@qml.qnode(dev_mu, interface="autograd")
-def local_hadamard_test(solver: VQLS, weights, l=None, lp=None, j=None, part=None):
-    # First Hadamard gate applied to the ancillary qubit.
-    qml.Hadamard(wires=parameters['ancilla_idx'])
-
-    # For estimating the imaginary part of the coefficient "mu", we must add a "-i"
-    # phase gate.
-    if part == "Im" or part == "im":
-        qml.PhaseShift(-np.pi / 2, wires=parameters['ancilla_idx'])
-
-    # Variational circuit generating a guess for the solution vector |x>
-    solver.variational_block(weights)
-
-    # Controlled application of the unitary component A_l of the problem matrix A.
-    solver.CA(l)
-
-    # Adjoint of the unitary U_b associated to the problem vector |b>.
-    # In this specific example Adjoint(U_b) = U_b.
-    solver.U_b()
-
-    # Controlled Z operator at position j. If j = -1, apply the identity.
-    if j != -1:
-        qml.CZ(wires=[parameters['ancilla_idx'], j])
-
-    # Unitary U_b associated to the problem vector |b>.
-    solver.U_b()
-
-    # Controlled application of Adjoint(A_lp).
-    # In this specific example Adjoint(A_lp) = A_lp.
-    solver.CA(lp)
-
-    # Second Hadamard gate applied to the ancillary qubit.
-    qml.Hadamard(wires=parameters['ancilla_idx'])
-
-    # Expectation value of Z for the ancillary qubit.
-    return qml.expval(qml.PauliZ(wires=parameters['ancilla_idx']))
-
-
-@qml.qnode(dev_x, interface="autograd")
-def prepare_and_sample(solver : VQLS, weights):
-
-    # Variational circuit generating a guess for the solution vector |x>
-    solver.variational_block(weights)
-
-    # We assume that the system is measured in the computational basis.
-    # then sampling the device will give us a value of 0 or 1 for each qubit (n_qubits)
-    # this will be repeated for the total number of shots provided (n_shots)
-    return qml.sample()
-
+            q_probs = vqls.get_quantum_probabilities(optimized_weights)
+            c_probs = get_classic_probabilities(matrix, b_padded)
+            #print(f'Classic probs: {c_probs}')
+            print(f'Quantum probs: {q_probs}')
 

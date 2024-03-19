@@ -1,26 +1,27 @@
 import numpy as np
 import sympy as sp
 
-from classic.polynomial_system import PolynomialSystem
-from classic.utils import generate_monomials, poly_to_vector
-
+from quantum.polynomial_system import PolynomialSystem
+from quantum.utils import generate_monomials, poly_to_vector, get_classic_probabilities
+from sympy.solvers.solveset import linsolve
 
 class MacaulayMatrix:
     def __init__(self, D: int) -> None:
         self.D: int= D
-        self.matrix: list[list] = []
+        self.matrix: list[list] = [] #TODO: Make matrix numpy array
 
-    ''' 
-    Calculate witness degree which used to determine degree of Macaulay matrix. Calculation based on Hilbert series. 
-    Index of non- element is counted from lowest degree element.
 
-    Input:
-        m - Number of equations inside system
-        n - Number of variables present in the system
-        k - Size of subset of variables (k <= n)
-    '''
     @staticmethod
     def calculate_witness_degree(m: int, n: int, k: int) -> int:
+        ''' 
+        Calculate witness degree which used to determine degree of Macaulay matrix. Calculation based on Hilbert series. 
+        Index of non- element is counted from lowest degree element.
+
+        Input:
+            m - Number of equations inside system
+            n - Number of variables present in the system
+            k - Size of subset of variables (k <= n)
+        '''
         t = sp.Symbol('t')
         nominator = (1 + t)**(n - k)
         denominator = (1 - t)*((1 + t**2)**m)
